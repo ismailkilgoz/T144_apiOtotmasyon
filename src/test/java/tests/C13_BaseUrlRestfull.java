@@ -1,8 +1,10 @@
 package tests;
 
 import baseUrl.RestfulBaseUrl;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.hamcrest.Matchers;
+import org.json.JSONObject;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
@@ -43,7 +45,7 @@ public class C13_BaseUrlRestfull extends RestfulBaseUrl {
               “checkin” : “2021-06-01”,
               “checkout” : “2021-06-10”
                        },
-     “additionalneeds” : “wi-fi”
+     “additionalneeds” : “wi-fi, Breakfast”
   }
      */
 
@@ -52,8 +54,33 @@ public class C13_BaseUrlRestfull extends RestfulBaseUrl {
         // Güncelleme : PUT(Full) - PATCH (Parçalı)
         // Görüntüleme : GET
         // Silme : DELETE
+    }
 
+    @Test
+    public void test02(){
 
+        specRestfull.pathParam("pp1","booking");
+        JSONObject bookingdates = new JSONObject();
+        bookingdates.put("checkin" , "2021-06-01");
+        bookingdates.put("checkout" , "2021-06-10");
 
+        JSONObject reqBody=new JSONObject();
+        reqBody.put("firstname","Murat");
+        reqBody.put("lastname","Yiğit");
+        reqBody.put("totalprice",500);
+        reqBody.put("depositpaid",false);
+        reqBody.put("bookingdates",bookingdates);
+        reqBody.put("additionalneeds","wi-fi, Breakfast");
+
+        Response response=given().contentType(ContentType.JSON).spec(specRestfull)
+                                .when().body(reqBody.toString()).post("/{pp1}");
+
+            response.prettyPrint();
+
+        response.then().assertThat().statusCode(200).body("booking.firstname",equalTo("Murat"));
+
+        response.then().assertThat().statusCode(200).body("booking.bookingdates.checkin",equalTo("2021-06-01"));
+
+        response.then().assertThat().body("booking.additionalneeds",equalTo("wi-fi, Breakfast"));
     }
 }
